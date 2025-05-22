@@ -56,7 +56,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#" data-section="members">
+              <a class="nav-link" href="#" data-section="members" onclick="showSection('members')">
                 <i class="fas fa-users"></i>
                 Members
               </a>
@@ -505,31 +505,25 @@
 
           <!-- Members Section -->
           <div id="membersSection" class="content-section" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h2 class="text-dark">Members</h2>
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
-                <i class="fas fa-user-plus me-1"></i> Add Member
+            <div class="container py-4">
+              <h3 class="mb-3">Members</h3>
+              <button class="btn btn-secondary mb-3" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                <i class="fas fa-user-plus"></i> Add Member
               </button>
-            </div>
-            <div class="card">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-hover" id="membersTable">
-                    <thead>
-                      <tr>
-                        <th>Member ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="membersTableBody">
-                      <!-- Members will be populated by JavaScript -->
-                    </tbody>
-                  </table>
-                </div>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="membersTableBody"></tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -581,18 +575,39 @@
         </div>
         <div class="modal-body">
           <!-- Add Book Form (fields can be added as needed) -->
-          <form>
+          <form id="addBookForm">
+            <div class="mb-3">
+              <label for="bookISBN" class="form-label">ISBN</label>
+              <input type="text" class="form-control" id="bookISBN" required>
+            </div>
             <div class="mb-3">
               <label for="bookTitle" class="form-label">Title</label>
-              <input type="text" class="form-control" id="bookTitle">
+              <input type="text" class="form-control" id="bookTitle" required>
             </div>
             <div class="mb-3">
               <label for="bookAuthor" class="form-label">Author</label>
-              <input type="text" class="form-control" id="bookAuthor">
+              <input type="text" class="form-control" id="bookAuthor" required>
             </div>
             <div class="mb-3">
               <label for="bookCategory" class="form-label">Category</label>
-              <input type="text" class="form-control" id="bookCategory">
+              <input type="text" class="form-control" id="bookCategory" required>
+            </div>
+            <div class="mb-3">
+              <label for="bookStatus" class="form-label">Status</label>
+              <select class="form-select" id="bookStatus" required>
+                <option value="Available">Available</option>
+                <option value="Borrowed">Borrowed</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="bookLocation" class="form-label">Location</label>
+              <input type="text" class="form-control" id="bookLocation" required>
+            </div>
+            <div class="mb-3">
+              <label for="bookAddedDate" class="form-label">Added Date</label>
+              <input type="date" class="form-control" id="bookAddedDate" required>
             </div>
             <button type="submit" class="btn btn-primary">Add Book</button>
           </form>
@@ -610,14 +625,35 @@
         </div>
         <div class="modal-body">
           <!-- New Acquisition Form -->
-          <form>
+          <form id="addAcquisitionForm">
             <div class="mb-3">
               <label for="acqBookTitle" class="form-label">Book Title</label>
-              <input type="text" class="form-control" id="acqBookTitle">
+              <input type="text" class="form-control" id="acqBookTitle" required>
             </div>
             <div class="mb-3">
               <label for="acqAuthor" class="form-label">Author</label>
-              <input type="text" class="form-control" id="acqAuthor">
+              <input type="text" class="form-control" id="acqAuthor" required>
+            </div>
+            <div class="mb-3">
+              <label for="acqPublisher" class="form-label">Publisher</label>
+              <input type="text" class="form-control" id="acqPublisher" required>
+            </div>
+            <div class="mb-3">
+              <label for="acqRequestedBy" class="form-label">Requested By</label>
+              <input type="text" class="form-control" id="acqRequestedBy" required>
+            </div>
+            <div class="mb-3">
+              <label for="acqDate" class="form-label">Request Date</label>
+              <input type="date" class="form-control" id="acqDate" required>
+            </div>
+            <div class="mb-3">
+              <label for="acqStatus" class="form-label">Status</label>
+              <select class="form-select" id="acqStatus" required>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Ordered">Ordered</option>
+                <option value="Received">Received</option>
+              </select>
             </div>
             <button type="submit" class="btn btn-success">Request Acquisition</button>
           </form>
@@ -635,14 +671,37 @@
         </div>
         <div class="modal-body">
           <!-- New Transaction Form -->
-          <form>
+          <form id="addTransactionForm">
             <div class="mb-3">
               <label for="transactionMember" class="form-label">Member</label>
-              <input type="text" class="form-control" id="transactionMember">
+              <input type="text" class="form-control" id="transactionMember" required>
             </div>
             <div class="mb-3">
-              <label for="transactionBook" class="form-label">Book</label>
-              <input type="text" class="form-control" id="transactionBook">
+              <label for="transactionBook" class="form-label">Book Title</label>
+              <input type="text" class="form-control" id="transactionBook" required>
+            </div>
+            <div class="mb-3">
+              <label for="transactionType" class="form-label">Type</label>
+              <select class="form-select" id="transactionType" required>
+                <option value="Borrow">Borrow</option>
+                <option value="Return">Return</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="transactionDate" class="form-label">Date</label>
+              <input type="date" class="form-control" id="transactionDate" required>
+            </div>
+            <div class="mb-3">
+              <label for="transactionDueDate" class="form-label">Due Date</label>
+              <input type="date" class="form-control" id="transactionDueDate" required>
+            </div>
+            <div class="mb-3">
+              <label for="transactionStatus" class="form-label">Status</label>
+              <select class="form-select" id="transactionStatus" required>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Overdue">Overdue</option>
+              </select>
             </div>
             <button type="submit" class="btn btn-info">Add Transaction</button>
           </form>
@@ -660,14 +719,26 @@
         </div>
         <div class="modal-body">
           <!-- Add Member Form -->
-          <form>
+          <form id="addMemberForm">
             <div class="mb-3">
               <label for="memberName" class="form-label">Name</label>
-              <input type="text" class="form-control" id="memberName">
+              <input type="text" class="form-control" id="memberName" required>
             </div>
             <div class="mb-3">
               <label for="memberEmail" class="form-label">Email</label>
-              <input type="email" class="form-control" id="memberEmail">
+              <input type="email" class="form-control" id="memberEmail" required>
+            </div>
+            <div class="mb-3">
+              <label for="memberPhone" class="form-label">Phone</label>
+              <input type="text" class="form-control" id="memberPhone" required>
+            </div>
+            <div class="mb-3">
+              <label for="memberStatus" class="form-label">Status</label>
+              <select class="form-select" id="memberStatus" required>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Banned">Banned</option>
+              </select>
             </div>
             <button type="submit" class="btn btn-secondary">Add Member</button>
           </form>

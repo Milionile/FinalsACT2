@@ -18,6 +18,7 @@ function toggleSidebar() {
       if (section === 'books') populateBooksTable();
       if (section === 'acquisition') populateAcquisitionTable();
       if (section === 'transaction') populateTransactionsTable();
+      if (section === 'members') populateMembersTable();
     }
 
     // Sample book data
@@ -104,6 +105,8 @@ const transactions = [
   }
 ];
 
+const members = [];
+
 // Function to populate books table
 function populateBooksTable() {
   const tbody = document.getElementById('booksTableBody');
@@ -169,6 +172,28 @@ function populateTransactionsTable() {
       <td>${tx.date}</td>
       <td>${tx.dueDate}</td>
       <td>${tx.status}</td>
+      <td>
+        <button class="btn btn-sm btn-info me-1">View</button>
+        <button class="btn btn-sm btn-warning me-1">Edit</button>
+        <button class="btn btn-sm btn-danger">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function populateMembersTable() {
+  const tbody = document.getElementById('membersTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  members.forEach((member, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td>${member.name}</td>
+      <td>${member.email}</td>
+      <td>${member.phone}</td>
+      <td>${member.status}</td>
       <td>
         <button class="btn btn-sm btn-info me-1">View</button>
         <button class="btn btn-sm btn-warning me-1">Edit</button>
@@ -321,7 +346,7 @@ function renderCalendar(date = new Date()) {
     }
 
     // Events
-    const events = exampleTransactions.filter(t => t.dueDate === dateStr);
+    const events = transactions.filter(t => t.dueDate === dateStr);
     if (events.length > 0) {
       dayDiv.classList.add('has-events');
       dayDiv.title = events.map(e => e.title).join('\n');
@@ -355,107 +380,98 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Listen for Add Book form submission
 document.addEventListener('DOMContentLoaded', function() {
-  const addBookForm = document.querySelector('#addBookModal form');
+  const addBookForm = document.getElementById('addBookForm');
   if (addBookForm) {
     addBookForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      // Get form values
+      const isbn = document.getElementById('bookISBN').value.trim();
       const title = document.getElementById('bookTitle').value.trim();
       const author = document.getElementById('bookAuthor').value.trim();
       const category = document.getElementById('bookCategory').value.trim();
-      if (!title || !author || !category) {
+      const status = document.getElementById('bookStatus').value.trim();
+      const location = document.getElementById('bookLocation').value.trim();
+      const addedDate = document.getElementById('bookAddedDate').value;
+      if (!isbn || !title || !author || !category || !status || !location || !addedDate) {
         alert('Please fill in all fields.');
         return;
       }
-      // Create new book object
-      const newBook = {
-        isbn: 'ISBN-' + Math.floor(Math.random() * 1000000000), // Simple random ISBN
-        title,
-        author,
-        category,
-        status: 'Available',
-        location: 'Shelf X',
-        addedDate: new Date().toISOString().slice(0, 10)
-      };
+      const newBook = { isbn, title, author, category, status, location, addedDate };
       books.push(newBook);
       populateBooksTable();
-      updateDashboard(); // <-- Add this line!
-      // Reset form
+      updateDashboard();
       addBookForm.reset();
-      // Close modal (Bootstrap 5)
       const modal = bootstrap.Modal.getInstance(document.getElementById('addBookModal'));
       if (modal) modal.hide();
     });
   }
-});
 
-// Listen for Add Transaction form submission
-document.addEventListener('DOMContentLoaded', function() {
-  const addTransactionForm = document.querySelector('#addTransactionModal form');
-  if (addTransactionForm) {
-    addTransactionForm.addEventListener('submit', function(e) {
+  // Listen for Add Acquisition form submission
+  const addAcquisitionForm = document.getElementById('addAcquisitionForm');
+  if (addAcquisitionForm) {
+    addAcquisitionForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      // Get form values
-      const member = document.getElementById('transactionMember').value.trim();
-      const book = document.getElementById('transactionBook').value.trim();
-      if (!member || !book) {
+      const title = document.getElementById('acqBookTitle').value.trim();
+      const author = document.getElementById('acqAuthor').value.trim();
+      const publisher = document.getElementById('acqPublisher').value.trim();
+      const requestedBy = document.getElementById('acqRequestedBy').value.trim();
+      const date = document.getElementById('acqDate').value;
+      const status = document.getElementById('acqStatus').value.trim();
+      if (!title || !author || !publisher || !requestedBy || !date || !status) {
         alert('Please fill in all fields.');
         return;
       }
-      // Add transaction
-      transactions.push({
-        id: transactions.length + 1,
-        member,
-        book,
-        type: "Borrow",
-        date: new Date().toISOString().slice(0, 10),
-        dueDate: "2025-06-15",
-        status: "Active"
-      });
+      const newAcquisition = { id: acquisitions.length + 1, title, author, publisher, requestedBy, date, status };
+      acquisitions.push(newAcquisition);
+      populateAcquisitionTable();
+      updateDashboard();
+      addAcquisitionForm.reset();
+      const modal = bootstrap.Modal.getInstance(document.getElementById('newAcquisitionModal'));
+      if (modal) modal.hide();
+    });
+  }
+
+  // Listen for Add Transaction form submission
+  const addTransactionForm = document.getElementById('addTransactionForm');
+  if (addTransactionForm) {
+    addTransactionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const member = document.getElementById('transactionMember').value.trim();
+      const book = document.getElementById('transactionBook').value.trim();
+      const type = document.getElementById('transactionType').value.trim();
+      const date = document.getElementById('transactionDate').value;
+      const dueDate = document.getElementById('transactionDueDate').value;
+      const status = document.getElementById('transactionStatus').value.trim();
+      if (!member || !book || !type || !date || !dueDate || !status) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      const newTransaction = { id: transactions.length + 1, member, book, type, date, dueDate, status };
+      transactions.push(newTransaction);
       populateTransactionsTable();
-      updateDashboard(); // <-- Add this line!
-      // Reset form
+      updateDashboard();
       addTransactionForm.reset();
-      // Close modal (Bootstrap 5)
       const modal = bootstrap.Modal.getInstance(document.getElementById('addTransactionModal'));
       if (modal) modal.hide();
     });
   }
-});
 
-// Listen for Add Acquisition form submission
-document.addEventListener('DOMContentLoaded', function() {
-  const addAcquisitionForm = document.querySelector('#addAcquisitionModal form');
-  if (addAcquisitionForm) {
-    addAcquisitionForm.addEventListener('submit', function(e) {
+  // Listen for Add Member form submission
+  const addMemberForm = document.getElementById('addMemberForm');
+  if (addMemberForm) {
+    addMemberForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      // Get form values
-      const title = document.getElementById('acquisitionTitle').value.trim();
-      const author = document.getElementById('acquisitionAuthor').value.trim();
-      const publisher = document.getElementById('acquisitionPublisher').value.trim();
-      const requestedBy = document.getElementById('acquisitionRequestedBy').value.trim();
-      const date = document.getElementById('acquisitionDate').value.trim();
-      if (!title || !author || !publisher || !requestedBy || !date) {
+      const name = document.getElementById('memberName').value.trim();
+      const email = document.getElementById('memberEmail').value.trim();
+      const phone = document.getElementById('memberPhone').value.trim();
+      const status = document.getElementById('memberStatus').value.trim();
+      if (!name || !email || !phone || !status) {
         alert('Please fill in all fields.');
         return;
       }
-      // Create new acquisition object
-      const newAcq = {
-        id: acquisitions.length + 1,
-        title,
-        author,
-        publisher,
-        requestedBy,
-        date,
-        status: 'Pending'
-      };
-      acquisitions.push(newAcq);
-      populateAcquisitionTable();
-      updateDashboard(); // <-- Add this line!
-      // Reset form
-      addAcquisitionForm.reset();
-      // Close modal (Bootstrap 5)
-      const modal = bootstrap.Modal.getInstance(document.getElementById('addAcquisitionModal'));
+      members.push({ name, email, phone, status });
+      populateMembersTable();
+      addMemberForm.reset();
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
       if (modal) modal.hide();
     });
   }
