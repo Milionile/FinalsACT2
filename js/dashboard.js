@@ -14,9 +14,8 @@ function toggleSidebar() {
         link.classList.toggle('active', link.getAttribute('data-section') === section);
       });
       // Populate books table when books section is shown
-      if (section === 'books') {
-        populateBooksTable();
-      }
+      if (section === 'dashboard') updateDashboard();
+      if (section === 'books') populateBooksTable();
       if (section === 'acquisition') populateAcquisitionTable();
       if (section === 'transaction') populateTransactionsTable();
     }
@@ -180,11 +179,57 @@ function populateTransactionsTable() {
   });
 }
 
+// Update dashboard stats
+function updateDashboardStats() {
+  // Total Books
+  document.getElementById('totalBooks').textContent = books.length;
+  // New Acquisitions (for demo: count all acquisitions)
+  document.getElementById('newAcquisitions').textContent = acquisitions.length;
+  // Active Loans (for demo: count transactions with status "Active")
+  document.getElementById('activeLoans').textContent = transactions.filter(tx => tx.status === "Active").length;
+  // Overdue Books (for demo: count transactions with status "Overdue")
+  document.getElementById('overdueBooks').textContent = transactions.filter(tx => tx.status === "Overdue").length;
+}
+
+// Update recent transactions table on dashboard
+function updateRecentTransactionsTable() {
+  const tbody = document.getElementById('transactionTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  // Show the 5 most recent transactions
+  const recent = [...transactions].reverse().slice(0, 5);
+  recent.forEach(tx => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${tx.id}</td>
+      <td>${tx.member}</td>
+      <td>${tx.book}</td>
+      <td>${tx.type}</td>
+      <td>${tx.date}</td>
+      <td>${tx.dueDate}</td>
+      <td>${tx.status}</td>
+      <td>
+        <button class="btn btn-sm btn-info me-1">View</button>
+        <button class="btn btn-sm btn-warning me-1">Edit</button>
+        <button class="btn btn-sm btn-danger">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Call this to update dashboard content
+function updateDashboard() {
+  updateDashboardStats();
+  updateRecentTransactionsTable();
+}
+
 // Show dashboard by default
 window.addEventListener('DOMContentLoaded', () => {
-      showSection('dashboard');
-      renderCalendar(window.currentDate);
-    });
+  showSection('dashboard');
+  renderCalendar(window.currentDate);
+  updateDashboard();
+});
 
     function logout() {
       alert('Logging out...');
@@ -333,14 +378,84 @@ document.addEventListener('DOMContentLoaded', function() {
         addedDate: new Date().toISOString().slice(0, 10)
       };
       books.push(newBook);
-      // Refresh table if books section is visible
-      if (document.getElementById('booksSection').style.display !== 'none') {
-        populateBooksTable();
-      }
+      populateBooksTable();
+      updateDashboard(); // <-- Add this line!
       // Reset form
       addBookForm.reset();
       // Close modal (Bootstrap 5)
       const modal = bootstrap.Modal.getInstance(document.getElementById('addBookModal'));
+      if (modal) modal.hide();
+    });
+  }
+});
+
+// Listen for Add Transaction form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const addTransactionForm = document.querySelector('#addTransactionModal form');
+  if (addTransactionForm) {
+    addTransactionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Get form values
+      const member = document.getElementById('transactionMember').value.trim();
+      const book = document.getElementById('transactionBook').value.trim();
+      if (!member || !book) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      // Add transaction
+      transactions.push({
+        id: transactions.length + 1,
+        member,
+        book,
+        type: "Borrow",
+        date: new Date().toISOString().slice(0, 10),
+        dueDate: "2025-06-15",
+        status: "Active"
+      });
+      populateTransactionsTable();
+      updateDashboard(); // <-- Add this line!
+      // Reset form
+      addTransactionForm.reset();
+      // Close modal (Bootstrap 5)
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addTransactionModal'));
+      if (modal) modal.hide();
+    });
+  }
+});
+
+// Listen for Add Acquisition form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const addAcquisitionForm = document.querySelector('#addAcquisitionModal form');
+  if (addAcquisitionForm) {
+    addAcquisitionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Get form values
+      const title = document.getElementById('acquisitionTitle').value.trim();
+      const author = document.getElementById('acquisitionAuthor').value.trim();
+      const publisher = document.getElementById('acquisitionPublisher').value.trim();
+      const requestedBy = document.getElementById('acquisitionRequestedBy').value.trim();
+      const date = document.getElementById('acquisitionDate').value.trim();
+      if (!title || !author || !publisher || !requestedBy || !date) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      // Create new acquisition object
+      const newAcq = {
+        id: acquisitions.length + 1,
+        title,
+        author,
+        publisher,
+        requestedBy,
+        date,
+        status: 'Pending'
+      };
+      acquisitions.push(newAcq);
+      populateAcquisitionTable();
+      updateDashboard(); // <-- Add this line!
+      // Reset form
+      addAcquisitionForm.reset();
+      // Close modal (Bootstrap 5)
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addAcquisitionModal'));
       if (modal) modal.hide();
     });
   }
